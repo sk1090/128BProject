@@ -36,7 +36,6 @@ for name in matrixNames:
     A12 = A[:sizeOfBlock, sizeOfBlock:]
     A21 = A[sizeOfBlock:, :sizeOfBlock]
     A22 = A[sizeOfBlock:, sizeOfBlock:]
-    np.random.seed(42)
     #generates a random b matrix
     b = np.random.rand(n)
     b1 = b[:sizeOfBlock]
