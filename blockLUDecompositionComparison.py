@@ -6,7 +6,7 @@ import scipy.io
 import time
 
 #function that does LU decomposition w/o pivoting 
-def lu_no_pivot(A):
+def luWithoutPivot(A):
     n = A.shape[0]
     L = np.eye(n)
     U = A.copy().astype(float)
@@ -43,11 +43,11 @@ for name in matrixNames:
     start = time.time()
     
     # Block LU decomposition to solve for x as described in paper
-    L11, U11 = lu_no_pivot(A11)
+    L11, U11 = luWithoutPivot(A11)
     U12 = np.linalg.solve(L11, A12) #solves A12  = L11U12 for U12
     L21 = np.linalg.solve(U11.T, A21.T).T #solves A21  = L21U11 for L21
     Schurs_complement = A22 - L21 @ U12 #Schur's complement
-    L22, U22 = lu_no_pivot(Schurs_complement)
+    L22, U22 = luWithoutPivot(Schurs_complement)
     #concatenates blocks together
     L = np.block([[L11, np.zeros((sizeOfBlock, n-sizeOfBlock))],[L21, L22]])
     U = np.block([[U11, U12],[np.zeros((n-sizeOfBlock, sizeOfBlock)), U22]])
@@ -63,7 +63,7 @@ for name in matrixNames:
 
     # normal LU decomposition to solve for x
     start = time.time()
-    L_normal, U_normal = lu_no_pivot(A)
+    L_normal, U_normal = luWithoutPivot(A)
     yNormal = np.linalg.solve(L_normal, b)
     xNormal = np.linalg.solve(U_normal, yNormal)
     normalLUTime = time.time() - start
