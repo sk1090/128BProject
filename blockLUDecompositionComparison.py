@@ -4,6 +4,7 @@ import scipy
 import numpy as np
 import scipy.io
 import time
+import matplotlib.pyplot as plt
 
 #function that does LU decomposition w/o pivoting 
 def luWithoutPivot(A):
@@ -17,6 +18,11 @@ def luWithoutPivot(A):
             L[i, k] = U[i, k] / U[k, k]
             U[i, k:] -= L[i, k] * U[k, k:]
     return L, U
+
+dimensions = []
+block_times = []
+gauss_times = []
+table = []
 
 #need to download these matrices from sparse.tamu.edu before running the code
 matrixNames = ['bcsstk24.mtx', '1138_bus.mtx', 'bcsstk03.mtx', 'arc130.mtx']
@@ -41,7 +47,6 @@ for name in matrixNames:
     b1 = b[:sizeOfBlock]
     b2 = b[sizeOfBlock:]
     start = time.time()
-    
     # Block LU decomposition to solve for x as described in paper
     L11, U11 = luWithoutPivot(A11)
     U12 = np.linalg.solve(L11, A12) #solves A12  = L11U12 for U12
@@ -69,6 +74,8 @@ for name in matrixNames:
     normalLUTime = time.time() - start
     nopivot_error = np.linalg.norm(A @ xNormal - b)
 
+    absolute_error = abs(blockLUTime-normalLUTime)
+    relative_error = abs((blockLUTime - normalLUTime)/normalLUTime)
     if np.allclose(A @ xBlock, b) and np.allclose(A @ xNormal, b):
         print(f'Normal LU decomposition Time: {normalLUTime} seconds')
         print(f'Block LU decomposition Finished in {blockLUTime} seconds')
@@ -77,5 +84,26 @@ for name in matrixNames:
     else:
         print("Incorrect Solution")
     print("\n")
+    dimensions.append(n)
+    block_times.append(blockLUTime)
+    gauss_times.append(normalLUTime)
+    table.append([name, n, blockLUTime, normalLUTime, absolute_error, relative_error ])
     
-    
+# Graph the results
+plt.figure(figsize=(8,5))
+plt.plot(dimensions, block_times, marker='o', color='blue', label='Block LU')
+plt.plot(dimensions, gauss_times, marker='s', color='red', label='Normal LU')
+plt.xlabel('Matrix Dimension (n)')
+plt.ylabel('Performance Time (seconds)')
+plt.title('Block LU vs Normal LU Decomposition Times')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+#print out table
+header = ["Matrix", "Size", "Block Time (s)", "Normal Time (s)", "Absolute Error (s)", "Relative Error"]
+print("{:<18} {:<8} {:<16} {:<16} {:<18} {:<16}".format(*header))
+for list in table:
+    print("{:<18} {:<8} {:<16.5f} {:<16.5f} {:<18.5f} {:<16.5f}".format(
+        list[0], list[1], list[2], list[3], list[4], list[5]
+    ))
